@@ -70,51 +70,51 @@ jobs:
   # =========================
   # SAST - CODEQL
   # =========================
-sast:
-  name: CodeQL (Python) - Security Gate
-  runs-on: ubuntu-latest
-  timeout-minutes: 45
+  sast:
+    name: CodeQL (Python) - Security Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
 
-  permissions:
-    contents: read
-    security-events: write
+    permissions:
+      contents: read
+      security-events: write
 
-  steps:
-    - name: Checkout source code
-      uses: actions/checkout@v4
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.9"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: python
-        queries: security-extended
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-extended
 
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
 
-    - name: Run CodeQL analysis
-      uses: github/codeql-action/analyze@v3
+      - name: Run CodeQL analysis
+        uses: github/codeql-action/analyze@v3
 
-    - name: Fail build if CodeQL alerts exist
-      run: |
-        alerts=$(gh api repos/${{ github.repository }}/code-scanning/alerts \
-          --jq '[.[] | select(.state=="open" and .tool.name=="CodeQL")] | length')
+      - name: Fail build if CodeQL alerts exist
+        run: |
+          alerts=$(gh api repos/${{ github.repository }}/code-scanning/alerts \
+            --jq '[.[] | select(.state=="open" and .tool.name=="CodeQL")] | length')
 
-        echo "Open CodeQL alerts: $alerts"
+          echo "Open CodeQL alerts: $alerts"
 
-        if [ "$alerts" -gt 0 ]; then
-          echo "Security vulnerabilities detected by CodeQL"
-          exit 1
-        else
-          echo "No CodeQL vulnerabilities found"
-        fi
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          if [ "$alerts" -gt 0 ]; then
+            echo "Security vulnerabilities detected by CodeQL"
+            exit 1
+          else
+            echo "No CodeQL vulnerabilities found"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # =========================
   # BUILD IMAGE (NO PUSH)

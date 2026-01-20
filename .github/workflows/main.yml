@@ -166,17 +166,6 @@ jobs:
           target: http://localhost:5000
           fail_action: true
           allow_issue_writing: false
-      
-      - name: Copy ZAP HTML report
-        run: |
-          docker cp $(docker ps -q -f ancestor=zaproxy/action-baseline) /zap/wrk/report.html ./zap_report.html || echo "No report generated yet"
-      
-      - name: Upload ZAP HTML report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-html-report
-          path: zap_report.html
 
   
       # ---------- Push image ----------

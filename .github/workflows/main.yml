@@ -57,8 +57,8 @@ jobs:
           out: "dependency-check-report"
           args: >
             --enableExperimental
+            --failOnCVSS 0
             --nvdApiKey ${{ secrets.NVD_API_KEY }}
-          exit-code: 1
 
       - name: Upload report
         if: always()

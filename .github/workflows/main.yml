@@ -149,7 +149,7 @@ jobs:
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@0.33.1
         with:
-          image-ref: $IMAGE_NAME:${{ steps.tag.outputs.tag }}
+          image-ref: ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }}
           ignore-unfixed: true
           severity: CRITICAL,HIGH,MEDIUM,LOW
           exit-code: 1

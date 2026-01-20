@@ -139,6 +139,7 @@ jobs:
             echo "tag=latest" >> $GITHUB_OUTPUT
           else
             echo "tag=beta" >> $GITHUB_OUTPUT
+          fi
   
       - name: Build Docker image
         run: |

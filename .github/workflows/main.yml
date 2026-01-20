@@ -121,60 +121,60 @@ jobs:
   # BUILD AND SCAN IMAGE
   # =========================
   build-and-scan:
-  name: Build Docker + SCA Trivy + DAST ZAP
-  runs-on: ubuntu-latest
-  # needs: [tests, sca-dependencies, sast]
-  needs: tests
-  if: github.event_name == 'push'
-
-  steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
-
-    # ---------- Build Docker image ----------
-    - name: Set image tag
-      id: tag
-      run: |
-        if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-          echo "tag=latest" >> $GITHUB_OUTPUT
-        else
-          echo "tag=beta" >> $GITHUB_OUTPUT
-
-    - name: Build Docker image
-      run: |
-        docker build -t $IMAGE_NAME:${{ steps.tag.outputs.tag }} .
-
-    # ---------- SCA - Trivy ----------
-    - name: Scan Docker image with Trivy
-      uses: aquasecurity/trivy-action@0.33.1
-      with:
-        image-ref: $IMAGE_NAME:${{ steps.tag.outputs.tag }}
-        ignore-unfixed: true
-        severity: CRITICAL,HIGH,MEDIUM,LOW
-        exit-code: 1
-
-    # ---------- DAST - OWASP ZAP ----------
-    - name: Run Docker container
-      run: |
-        docker run -d -p 8000:8000 $IMAGE_NAME:${{ steps.tag.outputs.tag }}
-        sleep 20
-
-    - name: ZAP Baseline Scan
-      uses: zaproxy/action-baseline@v0.12.0
-      with:
-        target: http://localhost:8000
-
-    # ---------- Optional: Push image ----------
-    - name: Login to Docker Hub
-      if: github.ref == 'refs/heads/main'
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USER }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Push Docker image
-      if: github.ref == 'refs/heads/main'
-      run: |
-        docker tag $IMAGE_NAME:${{ steps.tag.outputs.tag }} \
-          ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:${{ steps.tag.outputs.tag }}
-        docker push ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:${{ steps.tag.outputs.tag }}
+    name: Build Docker + SCA Trivy + DAST ZAP
+    runs-on: ubuntu-latest
+    # needs: [tests, sca-dependencies, sast]
+    needs: tests
+    if: github.event_name == 'push'
+  
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+  
+      # ---------- Build Docker image ----------
+      - name: Set image tag
+        id: tag
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          else
+            echo "tag=beta" >> $GITHUB_OUTPUT
+  
+      - name: Build Docker image
+        run: |
+          docker build -t $IMAGE_NAME:${{ steps.tag.outputs.tag }} .
+  
+      # ---------- SCA - Trivy ----------
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: $IMAGE_NAME:${{ steps.tag.outputs.tag }}
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH,MEDIUM,LOW
+          exit-code: 1
+  
+      # ---------- DAST - OWASP ZAP ----------
+      - name: Run Docker container
+        run: |
+          docker run -d -p 8000:8000 $IMAGE_NAME:${{ steps.tag.outputs.tag }}
+          sleep 20
+  
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: http://localhost:8000
+  
+      # ---------- Optional: Push image ----------
+      - name: Login to Docker Hub
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+  
+      - name: Push Docker image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker tag $IMAGE_NAME:${{ steps.tag.outputs.tag }} \
+            ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:${{ steps.tag.outputs.tag }}
+          docker push ${{ secrets.DOCKERHUB_USER }}/$IMAGE_NAME:${{ steps.tag.outputs.tag }}

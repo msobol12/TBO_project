@@ -166,7 +166,7 @@ jobs:
           target: http://localhost:5000
           fail_action: true
           allow_issue_writing: false
-          artifact_name: zap_report.html
+          artifact_name: zap-html-report
       
       - name: Upload ZAP HTML report
         if: always()

@@ -157,15 +157,15 @@ jobs:
           image-ref: ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }}
           ignore-unfixed: true
           severity: CRITICAL,HIGH,MEDIUM,LOW
-          format: html
-          output: trivy-report.html
+          format: json
+          output: trivy-report.json
           exit-code: 1
       - name: Upload Trivy report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: trivy-report
-          path: trivy-report.html
+          path: trivy-report.json
   
       # ---------- DAST - OWASP ZAP ----------
       - name: Run Docker container

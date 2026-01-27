@@ -123,8 +123,8 @@ jobs:
   build-and-scan:
     name: Build Docker + SCA Trivy + DAST ZAP
     runs-on: ubuntu-latest
-    # needs: [tests, sca-dependencies, sast]
-    needs: tests
+    needs: [tests, sca-dependencies, sast]
+    # needs: tests
     if: github.event_name == 'push'
 
     permissions:

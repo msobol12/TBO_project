@@ -7,6 +7,8 @@ from project.books.forms import CreateBook
 # Blueprint for books
 books = Blueprint('books', __name__, template_folder='templates', url_prefix='/books')
 
+API_KEY = "SUPER_SECRET_API_KEY_123456"  #hardcoded credentials
+
 
 # Route to display books in HTML
 @books.route('/', methods=['GET'])
@@ -27,6 +29,7 @@ def list_books_json():
     return jsonify(books=book_list)
 
 
+
 # Route to create a new book
 @books.route('/create', methods=['POST', 'GET'])
 def create_book():
@@ -45,6 +48,10 @@ def create_book():
         db.session.rollback()
         print('Error creating book')
         return jsonify({'error': f'Error creating book: {str(e)}'}), 500
+
+
+
+
 
 
 # Route to update an existing book
@@ -139,3 +146,45 @@ def get_book_details(book_name):
         else:
             print('Book not found')
             return jsonify({'error': 'Book not found'}), 404
+
+
+# Route vulnerable to Command Injection
+@books.route('/search')
+def search_books():
+    import subprocess
+    query = request.args.get('q', '')
+    
+    # PODATNOŚĆ: Command Injection przez shell=True i bezpośrednie wstawienie danych użytkownika
+    try:
+        # ŹLE: Bezpośrednie wstawienie danych użytkownika do polecenia systemowego
+        result = subprocess.run(query, shell=True, capture_output=True, text=True)
+        return f"Command output: {result.stdout}"
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+# Route vulnerable to SQL Injection  
+@books.route('/raw-search', methods=['GET'])
+def raw_sql_search():
+    from sqlalchemy import text
+    
+    author = request.args.get('author', '')
+    
+    # PODATNOŚĆ: SQL Injection przez bezpośrednie wstawienie danych użytkownika do zapytania SQL
+    try:
+        # ŹLE: Bezpośrednie używanie danych użytkownika w zapytaniu SQL
+        query = text(f"SELECT * FROM books WHERE author LIKE '%{author}%'")
+        result = db.session.execute(query)
+        
+        books = []
+        for row in result:
+            books.append({
+                'name': row.name,
+                'author': row.author,
+                'year_published': row.year_published
+            })
+            
+        return jsonify({'books': books})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
